@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bash deploy.sh)",
+      "Bash(git add *)",
+      "Bash(git commit -m 'Add owner admin, venue invites, and email sending *)",
+      "Bash(git config *)"
+    ]
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "wedding-hub",
+      "runtimeExecutable": "C:\\Users\\Owner\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+      "runtimeArgs": [
+        "-m", "http.server", "8099",
+        "--directory",
+        "D:\\Client Web Sites\\Claude Sites\\Website design training\\products\\wedding-hub\\public"
+      ],
+      "port": 8099
+    }
+  ]
+}
