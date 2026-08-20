@@ -21,32 +21,75 @@ let USER = null, VENUE = null, EDITING_MENU_ID = null;
 })();
 
 function setupLoginForm() {
-  $('#loginForm').addEventListener('submit', async e => {
-    e.preventDefault();
-    const email = $('#email').value.trim();
-    const btn = $('#loginBtn');
-    const msg = $('#loginMsg');
+  const form = $('#loginForm');
+  const email = $('#email');
+  const btn = $('#loginBtn');
+  const msg = $('#loginMsg');
+  let usePassword = false;
 
-    if (!email) return toast('Email is required', 'error');
+  // Create password inputs
+  const passwordGroup = document.createElement('div');
+  passwordGroup.className = 'fld';
+  passwordGroup.style.display = 'none';
+  passwordGroup.innerHTML = `
+    <label class="lbl" for="password">Password</label>
+    <input class="in" type="password" id="password" required>
+  `;
+  form.insertBefore(passwordGroup, btn);
+
+  const toggleBtn = document.createElement('p');
+  toggleBtn.className = 'hint';
+  toggleBtn.style.marginTop = '1rem';
+  toggleBtn.innerHTML = `<button type="button" style="background:none;border:none;color:var(--accent);cursor:pointer;text-decoration:underline;padding:0;font:inherit">Use password instead</button>`;
+  toggleBtn.querySelector('button').onclick = e => {
+    e.preventDefault();
+    usePassword = !usePassword;
+    passwordGroup.style.display = usePassword ? 'block' : 'none';
+    btn.textContent = usePassword ? 'Sign in' : 'Send me a login link';
+    toggleBtn.querySelector('button').textContent = usePassword ? 'Use magic link instead' : 'Use password instead';
+  };
+  form.appendChild(toggleBtn);
+
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const emailVal = email.value.trim();
+    const passwordVal = document.getElementById('password')?.value;
+
+    if (!emailVal) return toast('Email is required', 'error');
 
     btn.disabled = true;
-    btn.textContent = 'Sending…';
+    btn.textContent = 'Signing in…';
     msg.textContent = '';
 
-    const { error } = await sb.auth.signInWithOtp({
-      email: email,
-      options: { shouldCreateUser: false }
-    });
+    let error = null;
+
+    if (usePassword) {
+      if (!passwordVal) return toast('Password is required', 'error');
+      const { error: signInError } = await sb.auth.signInWithPassword({
+        email: emailVal,
+        password: passwordVal
+      });
+      error = signInError;
+    } else {
+      const { error: otpError } = await sb.auth.signInWithOtp({
+        email: emailVal,
+        options: { shouldCreateUser: false }
+      });
+      error = otpError;
+    }
 
     btn.disabled = false;
-    btn.textContent = 'Send me a login link';
+    btn.textContent = usePassword ? 'Sign in' : 'Send me a login link';
 
     if (error) {
       msg.style.color = 'var(--danger)';
       msg.textContent = error.message;
     } else {
       msg.style.color = 'var(--accent)';
-      msg.textContent = 'Check your email for the login link';
+      msg.textContent = usePassword ? 'Signed in! Loading…' : 'Check your email for the login link';
+      if (usePassword) {
+        setTimeout(() => location.reload(), 1000);
+      }
     }
   });
 }
