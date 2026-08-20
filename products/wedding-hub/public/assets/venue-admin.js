@@ -37,18 +37,18 @@ function setupLoginForm() {
   `;
   form.insertBefore(passwordGroup, btn);
 
-  const toggleBtn = document.createElement('a');
-  toggleBtn.href = '#';
+  const toggleBtn = document.createElement('p');
   toggleBtn.className = 'hint';
   toggleBtn.style.marginTop = '1rem';
-  toggleBtn.textContent = 'Use password instead';
-  toggleBtn.onclick = e => {
+  toggleBtn.innerHTML = `<button type="button" style="background:none;border:none;color:var(--accent);cursor:pointer;text-decoration:underline;padding:0;font:inherit">Use password instead</button>`;
+  toggleBtn.querySelector('button').onclick = e => {
     e.preventDefault();
     usePassword = !usePassword;
     passwordGroup.style.display = usePassword ? 'block' : 'none';
-    toggleBtn.textContent = usePassword ? 'Use magic link instead' : 'Use password instead';
+    btn.textContent = usePassword ? 'Sign in' : 'Send me a login link';
+    toggleBtn.querySelector('button').textContent = usePassword ? 'Use magic link instead' : 'Use password instead';
   };
-  form.insertBefore(toggleBtn, msg);
+  form.appendChild(toggleBtn);
 
   form.addEventListener('submit', async e => {
     e.preventDefault();
