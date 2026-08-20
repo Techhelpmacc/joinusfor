@@ -180,7 +180,7 @@ async function setupAccount() {
 
     toast('Account created! Redirecting…', 'success');
     setTimeout(() => {
-      window.location.href = '/admin/venue/';
+      window.location.href = '/admin/venue-settings.html';
     }, 500);
   } catch (err) {
     msg.textContent = err.message;
