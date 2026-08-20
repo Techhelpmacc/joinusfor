@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Venue Dashboard — Join Us For</title>
+<link rel="stylesheet" href="/assets/admin.css?v=400">
+<script src="/config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<header class="top">
+  <div class="top__in">
+    <span class="logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M20.8 5.6a5 5 0 0 0-7.1 0L12 7.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 21l8.8-8.3a5 5 0 0 0 0-7.1z"/>
+      </svg>
+      Join Us For
+    </span>
+    <span class="muted" id="whoami" style="font-size:.82rem;white-space:nowrap;margin-left:auto"></span>
+    <button class="btn btn--ghost btn--sm" id="signOut">Sign out</button>
+  </div>
+</header>
+
+<main class="shell">
+  <div style="display:flex;align-items:center;gap:1rem;margin:2rem 0">
+    <h1 style="margin:0;font-size:1.5rem" id="venueName">Loading…</h1>
+  </div>
+
+  <!-- Weddings List -->
+  <div id="weddingsList" style="display:grid;gap:1rem"></div>
+
+  <div id="noWeddings" class="panel empty" hidden>
+    <p style="text-align:center;margin:0">No weddings yet for this venue.</p>
+  </div>
+</main>
+
+<div class="wh-toasts" id="toasts"></div>
+
+<script type="module">
+import { sb, $, $$, el, toast } from '/assets/app.js?v=20';
+
+let USER = null;
+let VENUE = null;
+
+(async function boot() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) {
+    console.log('No session found, redirecting to home');
+    window.location.href = '/';
+    return;
+  }
+
+  USER = session.user;
+  console.log('User:', USER.email, USER.id);
+  $('#whoami').textContent = USER.email;
+
+  // Get user's venue
+  const { data: memberships, error: membError } = await sb
+    .from('memberships')
+    .select('venue_id')
+    .eq('user_id', USER.id)
+    .eq('role', 'venue');
+
+  console.log('Memberships query:', { data: memberships, error: membError });
+
+  if (!memberships || !memberships.length) {
+    console.log('No venue membership found, redirecting');
+    toast('You do not have venue access', 'error');
+    await sb.auth.signOut();
+    window.location.href = '/';
+    return;
+  }
+
+  const venueId = memberships[0].venue_id;
+
+  // Load venue
+  const { data: venue } = await sb
+    .from('venues')
+    .select('id, name')
+    .eq('id', venueId)
+    .single();
+
+  if (!venue) {
+    toast('Venue not found', 'error');
+    return;
+  }
+
+  VENUE = venue;
+  $('#venueName').textContent = venue.name;
+
+  // Load weddings
+  await loadWeddings();
+
+  $('#signOut').onclick = () => sb.auth.signOut().then(() => location.href = '/');
+})();
+
+async function loadWeddings() {
+  const { data: weddings, error } = await sb
+    .from('weddings')
+    .select('id, partner_a, partner_b, wedding_date, status')
+    .eq('venue_id', VENUE.id)
+    .order('wedding_date', { ascending: false });
+
+  if (error) {
+    toast('Error loading weddings', 'error');
+    return;
+  }
+
+  const list = $('#weddingsList');
+  list.innerHTML = '';
+
+  if (!weddings.length) {
+    $('#noWeddings').hidden = false;
+    return;
+  }
+
+  for (const wedding of weddings) {
+    const dateStr = new Date(wedding.wedding_date).toLocaleDateString('en-GB', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+
+    const card = el('div', { class: 'panel' },
+      el('div', { style: 'display:flex;align-items:center;gap:1rem' },
+        el('div', { style: 'flex:1' },
+          el('h3', { style: 'margin:0;font-size:1.1rem', text: `${wedding.partner_a} & ${wedding.partner_b}` }),
+          el('p', { class: 'panel__sub', style: 'margin:.5rem 0 0', text: dateStr })
+        ),
+        el('button', { class: 'btn btn--ghost btn--sm', type: 'button', text: 'Manage',
+                       onclick: () => goToWedding(wedding.id) })
+      )
+    );
+
+    list.append(card);
+  }
+}
+
+function goToWedding(weddingId) {
+  window.location.href = `/admin/venue/wedding.html?id=${weddingId}`;
+}
+</script>
+
+</body>
+</html>
