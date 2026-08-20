@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en" data-theme="ivory-sage">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Join Us For — a wedding website your venue can sell</title>
+<meta name="description" content="A guest website, RSVP tracking and a shared photo album that wedding venues resell to every couple as a paid add-on.">
+<link rel="stylesheet" href="/assets/wedding.css?v=11">
+<style>
+  .split { display: grid; gap: clamp(2rem, 5vw, 4rem); grid-template-columns: 1fr; align-items: start; }
+  @media (min-width: 52rem) { .split { grid-template-columns: 1fr 1fr; } }
+  .num { font-family: var(--font-display); font-size: var(--step-2); color: var(--accent); line-height: 1; }
+  .price { border: 1px solid var(--line); border-radius: var(--radius); padding: clamp(1.5rem,3vw,2.25rem); background: var(--card); }
+  .price--lead { border-color: var(--accent); box-shadow: var(--shadow-soft); }
+  .price__amt { font-family: var(--font-display); font-size: var(--step-3); line-height: 1; margin: .5rem 0 1rem; }
+  .price ul { list-style: none; margin: 1.25rem 0 0; padding: 0; }
+  .price li { padding-left: 1.5rem; position: relative; margin-bottom: .6rem; color: var(--muted); }
+  .price li::before { content: '—'; position: absolute; left: 0; color: var(--accent); }
+  .tag { display: inline-block; font-size: var(--step--1); letter-spacing: .16em; text-transform: uppercase; color: var(--accent); background: var(--accent-soft); padding: .3rem .7rem; border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<header class="nav" id="nav">
+  <div class="wrap nav__inner">
+    <a class="nav__brand" href="/">Join Us For</a>
+    <nav aria-label="Sections">
+      <ul class="nav__links">
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="/w/john-and-amy">See an example</a></li>
+        <li><a href="/couples/">Getting married?</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+
+  <section class="hero hero--noimage">
+    <div class="hero__inner" style="max-width:52rem">
+      <p class="eyebrow">For wedding venues</p>
+      <h1 class="display" style="font-size:var(--step-3)">
+        The add-on that sells itself at every viewing
+      </h1>
+      <p class="lede" style="margin:1.5rem auto 0;max-width:40rem">
+        A private website for each couple: their story, the timings, RSVPs that
+        actually get tracked, and an album the whole room fills up on the day.
+        You resell it. We handle everything behind it.
+      </p>
+      <p style="margin-top:2.5rem">
+        <a class="btn" href="/w/john-and-amy">See a real example</a>
+        <a class="btn btn--ghost" href="#pricing" style="margin-left:.5rem">What it costs</a>
+      </p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <div class="section__head section__head--center" style="margin-inline:auto">
+        <p class="eyebrow">The problem</p>
+        <h2 class="display section__title">Numbers arrive as a mess</h2>
+      </div>
+      <div class="grid">
+        <article class="card reveal">
+          <h3 class="card__title">Replies scattered everywhere</h3>
+          <p class="card__body">Cards in the post, texts, a Facebook message, someone's mum. Final numbers get chased twice and are still wrong.</p>
+        </article>
+        <article class="card reveal">
+          <h3 class="card__title">Dietary requirements go missing</h3>
+          <p class="card__body">The one thing your kitchen genuinely needs is the thing most likely to be lost between a couple's notebook and your inbox.</p>
+        </article>
+        <article class="card reveal">
+          <h3 class="card__title">The photos never surface</h3>
+          <p class="card__body">Two hundred guests take two thousand photos. The couple sees about nine of them, and you see none you could ever use.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--alt">
+    <div class="wrap split">
+      <div>
+        <p class="eyebrow">What the couple gets</p>
+        <h2 class="display section__title">One address to send everyone</h2>
+        <div class="prose" style="margin-top:1.5rem">
+          <p>Their names, their date, their story, and the running order of the day —
+          on a site that looks like it was designed for them, because it was.</p>
+          <p>Guests find their invitation by code or name, say who's coming, choose a
+          meal and flag allergies. The couple watch the numbers move in real time.</p>
+          <p>After the wedding the same address quietly becomes the photo album —
+          your photographer's shots, plus everything the guests took.</p>
+        </div>
+      </div>
+      <div class="stack">
+        <div class="card"><span class="num">01</span>
+          <h3 class="card__title" style="margin-top:.75rem">Invite</h3>
+          <p class="card__body">Guest list imported from a spreadsheet. Each household gets a printed code.</p></div>
+        <div class="card"><span class="num">02</span>
+          <h3 class="card__title" style="margin-top:.75rem">Track</h3>
+          <p class="card__body">Live count of attending, declined and still-to-reply. Catering summary. CSV export for your kitchen.</p></div>
+        <div class="card"><span class="num">03</span>
+          <h3 class="card__title" style="margin-top:.75rem">Remember</h3>
+          <p class="card__body">A QR code on each table. Guests upload straight from their phones. The couple approves what appears.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <div class="section__head section__head--center" style="margin-inline:auto">
+        <p class="eyebrow">For you</p>
+        <h2 class="display section__title">Nothing to build, per wedding</h2>
+      </div>
+      <div class="grid">
+        <article class="card reveal">
+          <h3 class="card__title">A minute to set up</h3>
+          <p class="card__body">Names, date, web address. The site is live. No deployment, no hosting to buy, no plugin to update.</p>
+        </article>
+        <article class="card reveal">
+          <h3 class="card__title">Their own domain, optionally</h3>
+          <p class="card__body">johnandamyswedding.com, registered, configured and renewed by us — nothing for you or the couple to set up. A subdomain of your own site works too, across every wedding you sell.</p>
+        </article>
+        <article class="card reveal">
+          <h3 class="card__title">Your brand, not ours</h3>
+          <p class="card__body">Four themes, your venue's name in the footer, and no visible third party the couple has to sign up with.</p>
+        </article>
+        <article class="card reveal">
+          <h3 class="card__title">Final numbers, cleanly</h3>
+          <p class="card__body">Meal counts and dietary requirements, exported the day the RSVP deadline closes. No chasing.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--alt" id="pricing">
+    <div class="wrap">
+      <div class="section__head section__head--center" style="margin-inline:auto">
+        <p class="eyebrow">Pricing</p>
+        <h2 class="display section__title">Sell it for what it's worth</h2>
+        <p class="lede">A suggested structure. Adjust to your market — this is your add-on, not ours.</p>
+      </div>
+      <div class="grid">
+        <div class="price">
+          <span class="tag">Included</span>
+          <p class="price__amt">£145</p>
+          <p class="card__body">Sold to the couple as a standard add-on.</p>
+          <ul>
+            <li>Their wedding site</li>
+            <li>RSVP tracking &amp; dietary reporting</li>
+            <li>Guest photo album with QR codes</li>
+            <li>Address on your domain</li>
+          </ul>
+        </div>
+        <div class="price price--lead">
+          <span class="tag">Most popular</span>
+          <p class="price__amt">£245</p>
+          <p class="card__body">Everything above, on a domain that's genuinely theirs.</p>
+          <ul>
+            <li>johnandamyswedding.com</li>
+            <li>Bought, set up and renewed by us</li>
+            <li>Album kept online for five years</li>
+            <li>You do the content entry for them</li>
+          </ul>
+        </div>
+        <div class="price">
+          <span class="tag">Your cost</span>
+          <p class="price__amt">~£2</p>
+          <p class="card__body">Per wedding, all in, at any realistic volume.</p>
+          <ul>
+            <li>Hosting: free tier or ~£20/month total</li>
+            <li>Domain: ~£12/year, Tier 3 only</li>
+            <li>No per-couple licence</li>
+            <li>No plugin subscriptions</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap--narrow center">
+      <p class="eyebrow">Have a look</p>
+      <h2 class="display section__title">See it as a guest would</h2>
+      <hr class="rule rule--center">
+      <p class="prose" style="margin-inline:auto">
+        The example below is a complete working wedding — try the RSVP with the
+        code <span class="card__link" style="border:0">ASHW-7734</span>.
+      </p>
+      <p style="margin-top:2rem">
+        <a class="btn" href="/w/john-and-amy">Open the example</a>
+      </p>
+    </div>
+  </section>
+
+  <section class="section section--alt">
+    <div class="wrap--narrow center">
+      <p class="eyebrow">The other half</p>
+      <h2 class="display section__title">And this is what you'd use</h2>
+      <hr class="rule rule--center">
+      <div class="prose" style="margin-inline:auto;text-align:left">
+        <p>Behind every wedding site is a management screen — the part your
+        coordinator lives in. Create a wedding in about a minute. Watch replies
+        arrive. Export the meal counts and allergies the day your deadline
+        closes. Hand the couple their own login and let them fill in the rest.</p>
+        <p>We will set you up with a demo of your own venue, with your name on
+        it, so you can click through it properly rather than watch someone else
+        drive.</p>
+      </div>
+      <p style="margin-top:2rem">
+        <a class="btn" href="mailto:hello@joinusfor.co.uk?subject=Venue%20demo%20request">Ask for a venue demo</a>
+        <a class="btn btn--ghost" href="/admin/" style="margin-left:.5rem">I already have a login</a>
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <span class="footer__venue">Join Us For</span>
+    <p style="margin:0">A wedding website your venue can sell to every couple.</p>
+    <p style="margin:.75rem 0 0;font-size:.9em">
+      <a href="mailto:hello@joinusfor.co.uk">hello@joinusfor.co.uk</a>
+      &nbsp;·&nbsp;
+      <a href="/couples/">Getting married yourself?</a>
+    </p>
+  </div>
+</footer>
+
+<script type="module">
+  const io = new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target); }
+  }), { rootMargin: '0px 0px -12% 0px' });
+  document.querySelectorAll('.reveal').forEach((n, i) => {
+    n.style.transitionDelay = `${(i % 4) * 80}ms`;
+    io.observe(n);
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Venue Admin</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="/assets/admin.css?v=400">
+<script src="/config.js"></script>
+</head>
+<body>
+
+<header class="top">
+  <div class="top__in">
+    <span class="logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M20.8 5.6a5 5 0 0 0-7.1 0L12 7.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 21l8.8-8.3a5 5 0 0 0 0-7.1z"/>
+      </svg>
+      Join Us For
+    </span>
+    <button class="btn btn--ghost btn--sm" id="backToWeddings">← Manage weddings</button>
+    <span class="muted" id="whoami" style="font-size:.82rem;white-space:nowrap"></span>
+    <button class="btn btn--ghost btn--sm" id="signOut" hidden>Sign out</button>
+  </div>
+</header>
+
+<main class="shell" id="venueView" hidden>
+  <h1 style="margin:0 0 .5rem;font-size:1.5rem" id="venueTitle"></h1>
+  <p class="panel__sub" style="margin:0 0 2rem" id="venueSub"></p>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;align-items:start">
+    <!-- Venue Details -->
+    <div class="panel">
+      <div class="panel__head">
+        <h2 class="panel__title">Venue Details</h2>
+      </div>
+      <form id="venueForm" style="display:grid;gap:1.5rem">
+        <div class="fld">
+          <label class="lbl" for="venueName">Venue Name</label>
+          <input class="in" id="venueName" required>
+        </div>
+
+        <div class="fld">
+          <label class="lbl" for="venuePhone">Phone</label>
+          <input class="in" id="venuePhone" type="tel">
+        </div>
+
+        <div class="fld">
+          <label class="lbl" for="venueEmail">Contact Email</label>
+          <input class="in" id="venueEmail" type="email">
+        </div>
+
+        <div class="fld">
+          <label class="lbl" for="venueAddress">Address</label>
+          <textarea class="ta" id="venueAddress" style="min-height:5rem"></textarea>
+        </div>
+
+        <div class="fld">
+          <label class="lbl" for="venueParking">Parking Information</label>
+          <textarea class="ta" id="venueParking" style="min-height:5rem"
+                    placeholder="Details about parking availability, directions, etc."></textarea>
+        </div>
+
+        <div class="fld">
+          <label class="lbl" for="venueMaps">Google Maps Link</label>
+          <input class="in" id="venueMaps" placeholder="https://maps.google.com/...">
+        </div>
+
+        <button class="btn" type="submit">Save Venue Details</button>
+      </form>
+    </div>
+
+    <!-- Menus Section -->
+    <div style="display:flex;flex-direction:column;gap:2rem">
+      <!-- Menu List -->
+      <div class="panel">
+        <div class="panel__head">
+          <h2 class="panel__title">Set Menus</h2>
+          <p class="panel__sub">Reusable templates for weddings</p>
+        </div>
+        <div id="menusList"></div>
+        <button class="btn btn--ghost" id="addMenuBtn" style="margin-top:1rem;width:100%">+ Add menu</button>
+      </div>
+
+      <!-- Add Menu Form -->
+      <div class="panel" id="addMenuPanel" hidden>
+        <div class="panel__head">
+          <h2 class="panel__title">Create Menu</h2>
+        </div>
+        <form id="addMenuForm" style="display:grid;gap:1.5rem">
+          <div class="fld">
+            <label class="lbl" for="newMenuName">Label</label>
+            <input class="in" id="newMenuName" placeholder="e.g. Gold Menu" required>
+          </div>
+          <div class="fld">
+            <label class="lbl" for="newMenuOptions">Meal Options</label>
+            <textarea class="ta" id="newMenuOptions" required style="min-height:6rem;font-family:monospace" placeholder="Beef
+Salmon
+Vegetarian"></textarea>
+          </div>
+          <div class="fld">
+            <label class="lbl" for="newMenuChildOptions">Children's Options (optional)</label>
+            <textarea class="ta" id="newMenuChildOptions" style="min-height:4rem;font-family:monospace" placeholder="Chicken goujons
+Pasta
+Sausage & mash"></textarea>
+          </div>
+          <div class="row" style="gap:1rem">
+            <button class="btn" type="submit">Create</button>
+            <button class="btn btn--ghost" type="button" id="cancelMenuForm">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</main>
+
+<section class="shell login" id="loginView" hidden>
+  <div class="panel">
+    <h1 style="margin:0 0 .35rem;font-size:1.25rem">Sign in</h1>
+    <p class="panel__sub" style="margin-bottom:1.25rem">
+      We'll send you a secure magic link—a unique one-time link to log in instantly. No password needed.
+    </p>
+    <form id="loginForm">
+      <div class="fld">
+        <label class="lbl" for="email">Email address</label>
+        <input class="in" type="email" id="email" required autocomplete="email"
+               placeholder="you@example.com">
+      </div>
+      <button class="btn" style="width:100%" id="loginBtn" type="submit">Send me a login link</button>
+    </form>
+    <p class="hint" id="loginMsg" style="margin-top:1rem"></p>
+  </div>
+</section>
+
+<script type="module" src="/assets/venue-admin.js?v=4"></script>
+</body>
+</html>
