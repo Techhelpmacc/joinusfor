@@ -164,10 +164,17 @@ async function createVenue() {
   btn.textContent = 'Creating…';
 
   try {
+    // Generate slug from venue name
+    const slug = name.toLowerCase()
+      .replace(/&/g, ' and ')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/-{2,}/g, '-')
+      .replace(/^-+|-+$/g, '');
+
     // Create venue
     const { data: venue, error: venueError } = await sb
       .from('venues')
-      .insert({ name, website: null })
+      .insert({ name, slug, website: null })
       .select()
       .single();
 
