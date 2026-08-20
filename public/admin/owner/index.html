@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Join Us For — Owner Admin</title>
+<link rel="stylesheet" href="/assets/admin.css?v=400">
+<script src="/config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  body { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+  .login-wrapper { width: min(100% - 2rem, 24rem); }
+</style>
+</head>
+<body>
+
+<div class="login-wrapper">
+  <div class="panel">
+    <h1 style="margin: 0 0 0.35rem; font-size: 1.25rem">Join Us For Owner</h1>
+    <p class="panel__sub" style="margin-bottom: 1.5rem">Manage venues and staff</p>
+
+    <div id="loginView">
+      <form id="loginForm">
+        <div class="fld">
+          <label class="lbl" for="email">Email address</label>
+          <input class="in" type="email" id="email" required autocomplete="email"
+                 placeholder="you@example.com">
+        </div>
+        <div class="fld">
+          <label class="lbl" for="password">Password</label>
+          <input class="in" type="password" id="password" required autocomplete="current-password">
+        </div>
+        <button class="btn" style="width: 100%" type="submit" id="loginBtn">Sign in</button>
+        <p class="hint" id="loginMsg" style="margin-top: 1rem; color: var(--danger); display: none;"></p>
+      </form>
+    </div>
+
+    <div id="loadingView" hidden>
+      <p style="text-align: center; color: var(--muted)">Signing in…</p>
+    </div>
+  </div>
+</div>
+
+<div class="wh-toasts" id="toasts"></div>
+
+<script type="module">
+import { sb, $, toast } from '/assets/app.js?v=20';
+
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const email = $('#email').value.trim();
+  const password = $('#password').value;
+  const btn = $('#loginBtn');
+  const msg = $('#loginMsg');
+
+  if (!email || !password) return;
+
+  btn.disabled = true;
+  btn.textContent = 'Signing in…';
+  msg.style.display = 'none';
+
+  try {
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
+
+    if (error) {
+      msg.style.display = 'block';
+      msg.textContent = error.message;
+      btn.disabled = false;
+      btn.textContent = 'Sign in';
+      return;
+    }
+
+    // Check if user is owner
+    const { data: roles } = await sb
+      .from('memberships')
+      .select('role')
+      .eq('user_id', data.user.id);
+
+    if (!roles || !roles.some(r => r.role === 'owner')) {
+      await sb.auth.signOut();
+      msg.style.display = 'block';
+      msg.textContent = 'You do not have owner access';
+      btn.disabled = false;
+      btn.textContent = 'Sign in';
+      return;
+    }
+
+    // Redirect to venues
+    window.location.href = '/admin/owner/venues.html';
+  } catch (err) {
+    msg.style.display = 'block';
+    msg.textContent = err.message;
+    btn.disabled = false;
+    btn.textContent = 'Sign in';
+  }
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Join Us For — RSVP</title>
+<link rel="stylesheet" href="/assets/admin.css">
+<script src="/config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  body { background: var(--bg); }
+  .guest-container { max-width: 28rem; margin: 4rem auto; padding: 0 1rem; }
+  .guest-header { text-align: center; margin-bottom: 2rem; }
+  .guest-logo { font-size: 1.15rem; font-weight: 600; color: var(--accent); margin-bottom: 1rem; }
+  .guest-title { font-size: 1.4rem; font-weight: 600; margin: 0 0 0.5rem; letter-spacing: -0.01em; }
+  .guest-subtitle { color: var(--muted); margin: 0; font-size: 0.95rem; }
+</style>
+</head>
+<body>
+
+<div class="guest-container">
+  <div class="guest-header">
+    <div class="guest-logo">💌 Join Us For</div>
+    <h1 class="guest-title">RSVP</h1>
+    <p class="guest-subtitle">Enter your invite code to get started</p>
+  </div>
+
+  <div class="panel">
+    <form id="guestForm">
+      <div class="fld">
+        <label class="lbl" for="inviteCode">Invite code</label>
+        <input class="in" type="text" id="inviteCode" required autocomplete="off"
+               placeholder="e.g. HXBRRM" style="text-transform: uppercase;">
+      </div>
+      <div class="fld">
+        <label class="lbl" for="guestEmail">Email address</label>
+        <input class="in" type="email" id="guestEmail" required autocomplete="email"
+               placeholder="you@example.com">
+      </div>
+      <button class="btn" style="width:100%" id="guestBtn" type="submit">Send me a login link</button>
+      <p id="guestMsg" class="hint" style="margin-top:1rem;color:var(--danger);display:none"></p>
+    </form>
+    <p class="hint" style="margin-top:1.5rem">
+      We'll send you a secure magic link—no password needed. Just click the link in your email to RSVP.
+    </p>
+  </div>
+</div>
+
+<div class="wh-toasts" id="toasts"></div>
+
+<script>
+// Initialize Supabase from window.WEDDING_HUB (set by config.js)
+const { createClient } = window.supabase;
+const sb = createClient(
+  window.WEDDING_HUB.SUPABASE_URL,
+  window.WEDDING_HUB.SUPABASE_ANON_KEY
+);
+
+function toast(msg, type = 'info') {
+  const toasts = document.getElementById('toasts');
+  const el = document.createElement('div');
+  el.className = `wh-toast wh-toast--${type}`;
+  el.textContent = msg;
+  toasts.append(el);
+  setTimeout(() => {
+    el.classList.add('is-out');
+    setTimeout(() => el.remove(), 300);
+  }, 4000);
+}
+
+document.getElementById('guestForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const code = document.getElementById('inviteCode').value.trim().toUpperCase();
+  const email = document.getElementById('guestEmail').value.trim();
+  const btn = document.getElementById('guestBtn');
+  const msg = document.getElementById('guestMsg');
+
+  if (!code || !email) return;
+
+  btn.disabled = true;
+  btn.textContent = 'Sending…';
+  msg.style.display = 'none';
+
+  try {
+    // Use rsvp_lookup to find the invite (requires wedding slug)
+    // For now, we'll try common slugs or ask the user
+    // Actually, we need the wedding slug - let's ask for it or use a lookup table
+
+    // For MVP, we'll store wedding_id in the URL or use a different approach
+    // Let's query the database directly but using a security-definer function
+
+    // Call a database function that's public-accessible to look up by code
+    const { data, error: callError } = await sb.rpc('guest_lookup_by_code', {
+      p_code: code
+    });
+
+    if (callError || !data) {
+      throw new Error('Invite code not found');
+    }
+
+    const invite = data;
+
+    // Send magic link
+    const { error } = await sb.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: `${location.origin}/guest/rsvp.html?code=${code}&invite=${invite.id}`
+      }
+    });
+
+    if (error) throw error;
+
+    toast('Check your email for a login link!', 'success');
+    document.getElementById('inviteCode').value = '';
+    document.getElementById('guestEmail').value = '';
+  } catch (err) {
+    msg.textContent = err.message || 'Something went wrong. Please try again.';
+    msg.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Send me a login link';
+  }
+});
+
+// Handle redirect from email link
+window.addEventListener('load', async () => {
+  const params = new URLSearchParams(location.search);
+  const code = params.get('code');
+  const inviteId = params.get('invite');
+
+  if (code && inviteId && !localStorage.getItem('guestLogged')) {
+    localStorage.setItem('guestLogged', 'true');
+    localStorage.setItem('guestCode', code);
+    localStorage.setItem('guestInvite', inviteId);
+    // Redirect to guest RSVP page
+    location.href = '/guest/rsvp.html';
+  }
+});
+</script>
+
+</body>
+</html>

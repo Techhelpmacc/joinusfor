@@ -1,0 +1,11 @@
+# Cloudflare Pages routing.
+#
+# /admin, /wedding and /upload are real directories with an index.html, so they
+# serve natively — no rule needed, and no fight with Pages' automatic
+# .html -> clean-URL redirect (which previously turned /admin into a loop).
+#
+# Only the slug routes need rewriting. 200 = serve that file but KEEP the
+# address bar, which is what lets resolveSlug() read the slug from the path.
+
+/w/*  /wedding/  200
+/u/*  /upload/   200

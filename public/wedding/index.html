@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en" data-theme="ivory-sage">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wedding</title>
+<meta name="description" content="Wedding details and RSVP.">
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="/assets/wedding.css?v=11">
+<script src="/config.js"></script>
+</head>
+<body>
+
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="nav" id="nav" hidden>
+  <div class="wrap nav__inner">
+    <a class="nav__brand" href="#top" id="navBrand">&nbsp;</a>
+    <nav aria-label="Sections">
+      <ul class="nav__links" id="navLinks"></ul>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- hero ------------------------------------------------------------- -->
+  <section class="hero hero--noimage" id="top">
+    <img class="hero__media" id="heroImage" alt="" hidden>
+    <div class="hero__inner">
+      <p class="eyebrow" id="heroEyebrow" style="color:inherit;opacity:.85"></p>
+      <h1 class="hero__names" id="heroNames">Loading…</h1>
+      <p class="hero__meta" id="heroMeta"></p>
+      <p class="countdown" id="countdown" hidden></p>
+      <p style="margin-top:2.25rem" id="heroCtaWrap" hidden>
+        <a class="btn" id="heroCta">View the photographs</a>
+      </p>
+    </div>
+  </section>
+
+  <!-- after the day ---------------------------------------------------- -->
+  <section class="section" id="closing" hidden>
+    <div class="wrap--narrow center">
+      <p class="eyebrow" id="closingEyebrow">Thank you</p>
+      <hr class="rule rule--center">
+      <div class="prose" id="closingBody" style="margin-inline:auto"></div>
+    </div>
+  </section>
+
+  <!-- story ------------------------------------------------------------ -->
+  <section class="section" id="story" hidden>
+    <div class="wrap--narrow center">
+      <p class="eyebrow">Our story</p>
+      <hr class="rule rule--center">
+      <div class="prose" id="storyBody" style="margin-inline:auto;text-align:left"></div>
+    </div>
+  </section>
+
+  <!-- schedule --------------------------------------------------------- -->
+  <section class="section section--alt" id="schedule" hidden>
+    <div class="wrap--narrow">
+      <div class="section__head">
+        <p class="eyebrow">The day</p>
+        <h2 class="display section__title">How it unfolds</h2>
+      </div>
+      <ol class="timeline" id="timeline"></ol>
+    </div>
+  </section>
+
+  <!-- details ---------------------------------------------------------- -->
+  <section class="section" id="details" hidden>
+    <div class="wrap">
+      <div class="section__head">
+        <p class="eyebrow">Everything else</p>
+        <h2 class="display section__title">Details &amp; directions</h2>
+      </div>
+      <div class="grid" id="infoGrid"></div>
+    </div>
+  </section>
+
+  <!-- rsvp ------------------------------------------------------------- -->
+  <section class="section section--alt" id="rsvp">
+    <div class="wrap--narrow">
+      <div class="section__head section__head--center">
+        <p class="eyebrow">Répondez s'il vous plaît</p>
+        <h2 class="display section__title">Will you join us?</h2>
+        <p class="lede" id="rsvpDeadline"></p>
+      </div>
+
+      <div class="rsvp-card">
+        <!-- step 1: find the invitation -->
+        <form id="lookupForm" novalidate>
+          <div class="field">
+            <label class="field__label" for="lookupInput">Find your invitation</label>
+            <input class="input" id="lookupInput" name="q" autocomplete="off"
+                   placeholder="Invitation code, or your full name" required>
+            <p class="field__hint" id="lookupHint">
+              Your code is printed on your invitation. You can also use the full name it was addressed to.
+            </p>
+          </div>
+          <button class="btn btn--wide" type="submit" id="lookupBtn">Look up my invitation</button>
+        </form>
+
+        <!-- step 2: respond -->
+        <form id="rsvpForm" hidden novalidate>
+          <div class="status-note" id="rsvpNote" hidden></div>
+          <p class="eyebrow" style="margin-bottom:.35rem">Invitation for</p>
+          <h3 class="display" style="font-size:var(--step-2);margin:0 0 1.75rem" id="householdName"></h3>
+
+          <div id="guestList"></div>
+
+          <div class="field" style="margin-top:2rem">
+            <label class="field__label" for="songInput">A song that will get you dancing</label>
+            <input class="input" id="songInput" placeholder="Artist – Track" autocomplete="off">
+          </div>
+          <div class="field">
+            <label class="field__label" for="messageInput">A message for the couple</label>
+            <textarea class="textarea" id="messageInput" placeholder="Optional"></textarea>
+          </div>
+
+          <button class="btn btn--wide" type="submit" id="rsvpSubmit">Send our response</button>
+          <p class="center" style="margin:1.25rem 0 0">
+            <button type="button" class="card__link" style="background:none;border:0;cursor:pointer;font-family:inherit" id="rsvpBack">
+              Not you? Search again
+            </button>
+          </p>
+        </form>
+
+        <!-- step 3: done -->
+        <div id="rsvpDone" hidden class="center">
+          <p class="eyebrow">Thank you</p>
+          <h3 class="display" style="font-size:var(--step-2);margin:.5rem 0 1rem" id="doneTitle"></h3>
+          <p class="prose" style="margin-inline:auto" id="doneBody"></p>
+          <button class="btn btn--ghost" style="margin-top:1.5rem" id="doneEdit">Change our response</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- gallery ---------------------------------------------------------- -->
+  <section class="section" id="gallery" hidden>
+    <div class="wrap">
+      <div class="section__head section__head--center">
+        <p class="eyebrow">The day itself</p>
+        <h2 class="display section__title">Photographs</h2>
+        <p class="lede" id="galleryNote"></p>
+      </div>
+      <section class="gallery-group" id="groupOfficial" hidden aria-labelledby="titleOfficial">
+        <h3 class="gallery-group__title" id="titleOfficial">From the photographer</h3>
+        <p class="gallery-group__sub">The official photographs of the day.</p>
+        <div class="gallery" id="gridOfficial"></div>
+        <p class="center" style="margin-top:1.75rem">
+          <button class="btn btn--ghost" type="button" id="moreOfficial" hidden></button>
+        </p>
+      </section>
+
+      <section class="gallery-group" id="groupGuest" hidden aria-labelledby="titleGuest">
+        <h3 class="gallery-group__title" id="titleGuest">From our guests</h3>
+        <p class="gallery-group__sub">Caught on the day by the people who were there.</p>
+        <div class="gallery" id="gridGuest"></div>
+        <p class="center" style="margin-top:1.75rem">
+          <button class="btn btn--ghost" type="button" id="moreGuest" hidden></button>
+        </p>
+      </section>
+      <p class="center" style="margin-top:2rem" id="galleryUploadWrap" hidden>
+        <a class="btn btn--ghost" id="galleryUploadLink">Add your photos</a>
+      </p>
+      <p class="center" style="margin-top:2.5rem" id="galleryBackWrap" hidden>
+        <a class="card__link" id="galleryBackLink">Back to the wedding site</a>
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <span class="footer__venue" id="footerVenue"></span>
+    <p id="footerLine" style="margin:0"></p>
+  </div>
+</footer>
+
+<!-- lightbox ----------------------------------------------------------- -->
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Photograph">
+  <button class="lightbox__close" id="lbClose" aria-label="Close">&times;</button>
+  <button class="lightbox__nav lightbox__nav--prev" id="lbPrev" aria-label="Previous">&#8249;</button>
+  <button class="lightbox__nav lightbox__nav--next" id="lbNext" aria-label="Next">&#8250;</button>
+  <div>
+    <img id="lbImage" alt="">
+    <p class="lightbox__cap" id="lbCap"></p>
+    <p class="lightbox__actions">
+      <a id="lbDownload" download>Download this photograph</a>
+    </p>
+  </div>
+</div>
+
+<script type="module" src="/assets/wedding.js?v=11"></script>
+</body>
+</html>

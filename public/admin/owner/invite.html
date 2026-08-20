@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Set up your account — Join Us For</title>
+<link rel="stylesheet" href="/assets/admin.css?v=400">
+<script src="/config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  body { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+  .setup-wrapper { width: min(100% - 2rem, 28rem); }
+</style>
+</head>
+<body>
+
+<div class="setup-wrapper">
+  <div class="panel">
+    <h1 style="margin: 0 0 0.35rem; font-size: 1.25rem">Welcome to <span id="venueName">Join Us For</span></h1>
+    <p class="panel__sub" style="margin-bottom: 1.5rem">Set up your password to get started</p>
+
+    <div id="loadingView">
+      <p style="text-align: center; color: var(--muted)">Checking your invite…</p>
+    </div>
+
+    <div id="setupView" hidden>
+      <form id="setupForm" style="display: grid; gap: 1.5rem;">
+        <div class="fld">
+          <label class="lbl" for="email">Email</label>
+          <input class="in" type="email" id="email" disabled style="opacity: 0.6;">
+        </div>
+        <div class="fld">
+          <label class="lbl" for="password">Create password</label>
+          <input class="in" type="password" id="password" required minlength="6"
+                 placeholder="At least 6 characters">
+        </div>
+        <div class="fld">
+          <label class="lbl" for="password2">Confirm password</label>
+          <input class="in" type="password" id="password2" required
+                 placeholder="Confirm your password">
+        </div>
+        <button class="btn" style="width: 100%" type="submit" id="setupBtn">Set up account</button>
+        <p class="hint" id="setupMsg" style="color: var(--danger); display: none;"></p>
+      </form>
+    </div>
+
+    <div id="errorView" hidden>
+      <p class="error" id="errorMsg"></p>
+    </div>
+
+    <p class="hint" style="margin-top: 1.5rem; text-align: center; font-size: 0.82rem;">
+      This invite link is valid for <strong>3 days</strong> from when it was sent.
+    </p>
+  </div>
+</div>
+
+<div class="wh-toasts" id="toasts"></div>
+
+<script type="module">
+import { sb, $, toast } from '/assets/app.js?v=20';
+
+let TOKEN = null;
+let INVITE_DATA = null;
+
+(async function boot() {
+  // Get token from URL
+  const params = new URLSearchParams(window.location.search);
+  TOKEN = params.get('token');
+
+  if (!TOKEN) {
+    showError('No invite token found. Please check your email for the correct link.');
+    return;
+  }
+
+  // Check invite validity
+  const { data, error } = await sb.rpc('venue_invite_check', {
+    p_token: TOKEN
+  });
+
+  if (error || !data) {
+    showError('Unable to verify invite. Please try again.');
+    return;
+  }
+
+  if (!data.valid) {
+    showError(data.message);
+    return;
+  }
+
+  INVITE_DATA = data;
+  $('#email').value = data.email;
+  $('#venueName').textContent = data.venue_name;
+  $('#loadingView').hidden = true;
+  $('#setupView').hidden = false;
+
+  // Wire up form
+  $('#setupForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    await setupAccount();
+  });
+})();
+
+async function setupAccount() {
+  const password = $('#password').value;
+  const password2 = $('#password2').value;
+  const msg = $('#setupMsg');
+  const btn = $('#setupBtn');
+
+  if (password !== password2) {
+    msg.textContent = 'Passwords do not match';
+    msg.style.display = 'block';
+    return;
+  }
+
+  if (password.length < 6) {
+    msg.textContent = 'Password must be at least 6 characters';
+    msg.style.display = 'block';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Setting up…';
+  msg.style.display = 'none';
+
+  try {
+    // Create user with email and password
+    const { data: authData, error: authError } = await sb.auth.signUp({
+      email: INVITE_DATA.email,
+      password: password,
+      options: {
+        emailRedirectTo: window.location.origin
+      }
+    });
+
+    if (authError) {
+      // User might already exist, try to sign in instead
+      if (authError.message.includes('already registered')) {
+        const { error: signInError } = await sb.auth.signInWithPassword({
+          email: INVITE_DATA.email,
+          password: password
+        });
+
+        if (signInError) {
+          msg.textContent = 'Incorrect password. If you already have an account, please sign in on the login page.';
+          msg.style.display = 'block';
+          btn.disabled = false;
+          btn.textContent = 'Set up account';
+          return;
+        }
+      } else {
+        throw authError;
+      }
+    }
+
+    const userId = authData.user?.id || (await sb.auth.getSession()).data?.session?.user?.id;
+
+    if (!userId) {
+      throw new Error('Failed to create user');
+    }
+
+    // Activate the invite
+    const { data: activateData, error: activateError } = await sb.rpc('venue_invite_activate', {
+      p_token: TOKEN,
+      p_user_id: userId
+    });
+
+    if (activateError || activateData.error) {
+      throw new Error(activateData?.error || activateError?.message);
+    }
+
+    toast('Account created! Redirecting…', 'success');
+    setTimeout(() => {
+      window.location.href = '/admin/venue-settings.html';
+    }, 500);
+  } catch (err) {
+    msg.textContent = err.message;
+    msg.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'Set up account';
+  }
+}
+
+function showError(msg) {
+  $('#loadingView').hidden = true;
+  $('#setupView').hidden = true;
+  $('#errorView').hidden = false;
+  $('#errorMsg').textContent = msg;
+}
+</script>
+
+</body>
+</html>

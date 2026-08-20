@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Manage Venues — Join Us For Owner</title>
+<link rel="stylesheet" href="/assets/admin.css?v=400">
+<script src="/config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<header class="top">
+  <div class="top__in">
+    <span class="logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M20.8 5.6a5 5 0 0 0-7.1 0L12 7.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 21l8.8-8.3a5 5 0 0 0 0-7.1z"/>
+      </svg>
+      Join Us For
+    </span>
+    <span class="muted" id="whoami" style="font-size:.82rem;white-space:nowrap;margin-left:auto"></span>
+    <button class="btn btn--ghost btn--sm" id="signOut">Sign out</button>
+  </div>
+</header>
+
+<main class="shell">
+  <div style="display:flex;align-items:center;gap:1rem;margin:2rem 0">
+    <h1 style="margin:0;font-size:1.5rem">Venues</h1>
+    <button class="btn" id="newVenueBtn" style="margin-left:auto">+ Add venue</button>
+  </div>
+
+  <!-- Create Venue Form -->
+  <div class="panel" id="createVenuePanel" hidden>
+    <h2 class="panel__title">Create new venue</h2>
+    <form id="createVenueForm" style="display:grid;gap:1.5rem">
+      <div class="fld">
+        <label class="lbl" for="venueName">Venue name</label>
+        <input class="in" id="venueName" required placeholder="e.g. The Manor House">
+      </div>
+      <div class="fld">
+        <label class="lbl" for="venueEmail">Invite staff email</label>
+        <input class="in" type="email" id="venueEmail" required placeholder="staff@venue.com">
+      </div>
+      <div class="row" style="gap:1rem">
+        <button class="btn" type="submit">Create & invite</button>
+        <button class="btn btn--ghost" type="button" id="cancelVenue">Cancel</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Venues List -->
+  <div id="venuesList"></div>
+</main>
+
+<div class="wh-toasts" id="toasts"></div>
+
+<script type="module">
+import { sb, $, $$, el, toast } from '/assets/app.js?v=20';
+
+let USER = null;
+
+(async function boot() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) {
+    window.location.href = '/admin/owner/';
+    return;
+  }
+
+  USER = session.user;
+  $('#whoami').textContent = USER.email;
+
+  // Check if user is owner
+  const { data: roles } = await sb
+    .from('memberships')
+    .select('role')
+    .eq('user_id', USER.id);
+
+  if (!roles || !roles.some(r => r.role === 'owner')) {
+    await sb.auth.signOut();
+    window.location.href = '/admin/owner/';
+    return;
+  }
+
+  // Load venues
+  await loadVenues();
+
+  // Wire up form
+  $('#newVenueBtn').onclick = () => {
+    $('#createVenuePanel').hidden = false;
+    $('#venueName').focus();
+  };
+
+  $('#cancelVenue').onclick = () => {
+    $('#createVenuePanel').hidden = true;
+    $('#createVenueForm').reset();
+  };
+
+  $('#createVenueForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    await createVenue();
+  });
+
+  $('#signOut').onclick = () => sb.auth.signOut().then(() => location.href = '/admin/owner/');
+})();
+
+async function loadVenues() {
+  const { data: venues, error } = await sb
+    .from('venues')
+    .select('id, name, created_at')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    toast('Error loading venues', 'error');
+    return;
+  }
+
+  const list = $('#venuesList');
+  list.innerHTML = '';
+
+  if (!venues.length) {
+    list.append(el('p', { class: 'empty', text: 'No venues yet. Create one to get started.' }));
+    return;
+  }
+
+  for (const venue of venues) {
+    // Get staff count
+    const { count: staffCount } = await sb
+      .from('memberships')
+      .select('*', { count: 'exact', head: true })
+      .eq('venue_id', venue.id)
+      .eq('role', 'venue');
+
+    // Get pending invites
+    const { count: pendingCount } = await sb
+      .from('venue_invites')
+      .select('*', { count: 'exact', head: true })
+      .eq('venue_id', venue.id)
+      .is('activated_at', null);
+
+    const card = el('div', { class: 'panel' },
+      el('div', { style: 'display:flex;align-items:center;gap:1rem;margin-bottom:1rem' },
+        el('div', { style: 'flex:1' },
+          el('h3', { style: 'margin:0;font-size:1.1rem', text: venue.name }),
+          el('p', { class: 'panel__sub', style: 'margin:.5rem 0 0', text: `${staffCount} staff${pendingCount ? ` • ${pendingCount} pending invite${pendingCount > 1 ? 's' : ''}` : ''}` })
+        ),
+        el('button', { class: 'btn btn--ghost btn--sm', type: 'button', text: 'Invite staff',
+                       onclick: () => showInviteDialog(venue) })
+      )
+    );
+
+    list.append(card);
+  }
+}
+
+async function createVenue() {
+  const name = $('#venueName').value.trim();
+  const email = $('#venueEmail').value.trim();
+
+  if (!name || !email) return;
+
+  const btn = document.querySelector('#createVenueForm button[type="submit"]');
+  btn.disabled = true;
+  btn.textContent = 'Creating…';
+
+  try {
+    // Create venue
+    const { data: venue, error: venueError } = await sb
+      .from('venues')
+      .insert({ name, website: null })
+      .select()
+      .single();
+
+    if (venueError) throw venueError;
+
+    // Create invite
+    const { data: inviteData, error: inviteError } = await sb
+      .rpc('create_venue_invite', {
+        p_venue_id: venue.id,
+        p_email: email
+      });
+
+    if (inviteError) throw inviteError;
+
+    if (inviteData.error) {
+      toast(inviteData.error, 'error');
+      btn.disabled = false;
+      btn.textContent = 'Create & invite';
+      return;
+    }
+
+    // Send email with invite link
+    const { error: emailError } = await sb.rpc('send_invite_email', {
+      p_email: email,
+      p_venue_name: name,
+      p_invite_token: inviteData.token
+    });
+
+    if (emailError) {
+      console.error('Email send error:', emailError);
+      toast(`Venue created but email failed to send. Invite token: ${inviteData.token}`, 'error');
+      return;
+    }
+
+    toast(`Venue created and invite email sent to ${email}`, 'success');
+
+    $('#createVenuePanel').hidden = true;
+    $('#createVenueForm').reset();
+    btn.disabled = false;
+    btn.textContent = 'Create & invite';
+
+    await loadVenues();
+  } catch (err) {
+    toast(err.message, 'error');
+    btn.disabled = false;
+    btn.textContent = 'Create & invite';
+  }
+}
+
+async function showInviteDialog(venue) {
+  const email = prompt(`Invite email for ${venue.name}:`);
+  if (!email) return;
+
+  try {
+    const { data, error } = await sb.rpc('create_venue_invite', {
+      p_venue_id: venue.id,
+      p_email: email
+    });
+
+    if (error || data.error) {
+      toast(data?.error || error?.message, 'error');
+      return;
+    }
+
+    // Send email with invite link
+    const { error: emailError } = await sb.rpc('send_invite_email', {
+      p_email: email,
+      p_venue_name: venue.name,
+      p_invite_token: data.token
+    });
+
+    if (emailError) {
+      console.error('Email send error:', emailError);
+      toast(`Invite created but email failed to send. Token: ${data.token}`, 'error');
+      return;
+    }
+
+    toast(`Invite email sent to ${email}`, 'success');
+    await loadVenues();
+  } catch (err) {
+    toast(err.message, 'error');
+  }
+}
+</script>
+
+</body>
+</html>

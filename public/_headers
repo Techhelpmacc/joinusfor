@@ -1,0 +1,26 @@
+# Cache rules.
+#
+# The JS and CSS filenames never change, so without this a browser can hold a
+# stale copy for a long time after a deploy — guests would keep running old code
+# and any fix you ship wouldn't reach them. Short max-age with revalidation
+# means a deploy takes effect on the next page load.
+
+# no-cache means "store it, but check with the server every time". Revalidation
+# returns a tiny 304 when nothing changed, so this costs almost nothing — and it
+# guarantees a deploy reaches everyone immediately. Browsers were holding stale
+# ES modules under max-age even with must-revalidate.
+/assets/*
+  Cache-Control: no-cache
+
+/config.js
+  Cache-Control: no-cache
+
+# Never cache the pages themselves.
+/
+  Cache-Control: no-cache
+/w/*
+  Cache-Control: no-cache
+/u/*
+  Cache-Control: no-cache
+/admin/*
+  Cache-Control: no-cache
