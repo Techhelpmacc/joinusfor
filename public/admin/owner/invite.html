@@ -135,7 +135,7 @@ async function setupAccount() {
     if (authError) {
       // User might already exist, try to sign in instead
       if (authError.message.includes('already registered')) {
-        const { error: signInError } = await sb.auth.signInWithPassword({
+        const { data: signInData, error: signInError } = await sb.auth.signInWithPassword({
           email: INVITE_DATA.email,
           password: password
         });
@@ -147,12 +147,20 @@ async function setupAccount() {
           btn.textContent = 'Set up account';
           return;
         }
+
+        authData = signInData;
       } else {
         throw authError;
       }
     }
 
-    const userId = authData.user?.id || (await sb.auth.getSession()).data?.session?.user?.id;
+    let userId = authData?.user?.id;
+
+    // Fallback: get from session if not found above
+    if (!userId) {
+      const { data: { session } } = await sb.auth.getSession();
+      userId = session?.user?.id;
+    }
 
     if (!userId) {
       throw new Error('Failed to create user');
