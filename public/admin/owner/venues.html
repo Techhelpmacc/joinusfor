@@ -184,6 +184,37 @@ async function createVenue() {
 
     if (venueError) throw venueError;
 
+    // Someone who already has a login does not need an invite — an invite asks
+    // them to choose a password they already have. Link them to the venue and
+    // tell them they can sign in with what they've got.
+    const { data: existing, error: existingError } = await sb
+      .rpc('add_existing_user_to_venue', {
+        p_venue_id: venue.id,
+        p_email: email
+      });
+
+    if (existingError) throw existingError;
+    if (existing?.error) throw new Error(existing.error);
+
+    if (existing?.found) {
+      const { error: welcomeError } = await sb.rpc('send_welcome_email', {
+        p_email: email,
+        p_venue_name: name
+      });
+
+      if (welcomeError) console.error('Welcome email error:', welcomeError);
+
+      toast(`${email} already had an account and now has access to ${name}. `
+          + `They sign in with their existing password.`, 'success');
+
+      $('#createVenuePanel').hidden = true;
+      $('#createVenueForm').reset();
+      btn.disabled = false;
+      btn.textContent = 'Create & invite';
+      await loadVenues();
+      return;
+    }
+
     // Create invite
     const { data: inviteData, error: inviteError } = await sb
       .rpc('create_venue_invite', {
@@ -233,6 +264,25 @@ async function showInviteDialog(venue) {
   if (!email) return;
 
   try {
+    // As with venue creation: an existing account gets access directly rather
+    // than an invite it cannot complete.
+    const { data: existing } = await sb.rpc('add_existing_user_to_venue', {
+      p_venue_id: venue.id,
+      p_email: email
+    });
+
+    if (existing?.found) {
+      const { error: welcomeError } = await sb.rpc('send_welcome_email', {
+        p_email: email,
+        p_venue_name: venue.name
+      });
+      if (welcomeError) console.error('Welcome email error:', welcomeError);
+
+      toast(`${email} already had an account and now has access to ${venue.name}.`, 'success');
+      await loadVenues();
+      return;
+    }
+
     const { data, error } = await sb.rpc('create_venue_invite', {
       p_venue_id: venue.id,
       p_email: email

@@ -108,11 +108,15 @@ async function loadVenue(user) {
   USER = user;
   $('#whoami').textContent = `${user.email}`;
 
-  // Get user's venue(s)
+  // One account can run more than one venue — a group with two sites, or a
+  // manager who moved. .single() used to reject that as firmly as it rejected
+  // having none, so a second venue locked someone out of both.
   const { data: memberships } = await sb.from('memberships')
-    .select('venue_id').eq('user_id', user.id).single();
+    .select('venue_id').eq('user_id', user.id).not('venue_id', 'is', null);
 
-  if (!memberships || !memberships.venue_id) {
+  const venueIds = (memberships || []).map(m => m.venue_id);
+
+  if (!venueIds.length) {
     document.getElementById('venueView').innerHTML = `
       <div class="panel">
         <h1>No venue access</h1>
@@ -122,10 +126,16 @@ async function loadVenue(user) {
     return;
   }
 
-  const { data: venue } = await sb.from('venues')
-    .select('*').eq('id', memberships.venue_id).single();
+  const { data: venues } = await sb.from('venues')
+    .select('*').in('id', venueIds).order('name');
 
-  if (!venue) return toast('Venue not found', 'error');
+  if (!venues || !venues.length) return toast('Venue not found', 'error');
+
+  // Remember which one they were last looking at, so switching venue survives
+  // a reload rather than silently bouncing them back to the first.
+  const remembered = localStorage.getItem('wh_venue');
+  const venue = venues.find(v => v.id === remembered) || venues[0];
+  buildVenuePicker(venues, venue);
 
   VENUE = venue;
   fillVenueForm(venue);
@@ -158,6 +168,27 @@ async function loadVenue(user) {
     e.preventDefault();
     await createMenu();
   });
+}
+
+/** Only worth showing when there is actually a choice to make. */
+function buildVenuePicker(venues, current) {
+  if (venues.length < 2) return;
+
+  const host = document.querySelector('.top__in');
+  if (!host || document.getElementById('venuePicker')) return;
+
+  const select = el('select', {
+    id: 'venuePicker',
+    class: 'in',
+    style: 'width:auto;padding:.35rem .5rem;font-size:.82rem',
+    onchange: e => {
+      localStorage.setItem('wh_venue', e.target.value);
+      location.reload();
+    }
+  }, ...venues.map(v => el('option', { value: v.id, text: v.name })));
+
+  select.value = current.id;
+  host.insertBefore(select, document.getElementById('whoami'));
 }
 
 function fillVenueForm(venue) {
