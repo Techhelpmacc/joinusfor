@@ -177,7 +177,7 @@ async function setupAccount() {
     }
 
     // Send welcome email (best-effort - don't fail if it doesn't send)
-    await sb.rpc('send_welcome_email', {
+    sb.rpc('send_welcome_email', {
       p_email: INVITE_DATA.email,
       p_venue_name: INVITE_DATA.venue_name
     }).catch(() => {
