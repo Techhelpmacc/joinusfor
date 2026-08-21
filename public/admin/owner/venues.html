@@ -197,7 +197,7 @@ async function createVenue() {
     if (existing?.error) throw new Error(existing.error);
 
     if (existing?.found) {
-      const { error: welcomeError } = await sb.rpc('send_welcome_email', {
+      const { error: welcomeError } = await sb.rpc('send_added_to_venue_email', {
         p_email: email,
         p_venue_name: name
       });
@@ -272,7 +272,7 @@ async function showInviteDialog(venue) {
     });
 
     if (existing?.found) {
-      const { error: welcomeError } = await sb.rpc('send_welcome_email', {
+      const { error: welcomeError } = await sb.rpc('send_added_to_venue_email', {
         p_email: email,
         p_venue_name: venue.name
       });
