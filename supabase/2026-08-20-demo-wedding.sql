@@ -13,7 +13,7 @@ begin
     rsvp_open, rsvp_deadline
   ) values (
     p_venue_id,
-    'Colin', 'Amanda',
+    'John', 'Amy',
     '2026-10-09'::date,
     'demo-wedding',
     'live',
@@ -28,13 +28,13 @@ begin
   -- Create couple as guests
   insert into public.guests (wedding_id, full_name, rsvp_status)
     values
-      (v_wedding_id, 'Colin', 'attending'),
-      (v_wedding_id, 'Amanda', 'attending')
+      (v_wedding_id, 'John', 'attending'),
+      (v_wedding_id, 'Amy', 'attending')
     on conflict do nothing;
 
   -- Create demo invite for couple
   insert into public.invites (wedding_id, household_name, invite_code, invited_to)
-    values (v_wedding_id, 'Colin & Amanda', 'DEMO00', 'all')
+    values (v_wedding_id, 'Demo: John & Amy', 'DEMO00', 'all')
     on conflict do nothing;
 
   -- Create sample guests
