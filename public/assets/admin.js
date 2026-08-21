@@ -172,7 +172,9 @@ async function renderHome() {
     },
       el('div', {},
         el('span', { class: 'wed-card__names', text: `${w.partner_a} & ${w.partner_b}` }),
-        w.slug === 'demo-wedding' ? el('span', { style: 'display:block;color:#dc3545;font-size:0.85rem;font-weight:600;margin-top:0.25rem;text-transform:uppercase;letter-spacing:0.05em', text: 'Demo' }) : null
+        // Each venue's demo carries its own id in the slug, so match the prefix
+        // rather than the whole thing or only the first venue ever gets a badge.
+        (w.slug || '').startsWith('demo-wedding') ? el('span', { style: 'display:block;color:#dc3545;font-size:0.85rem;font-weight:600;margin-top:0.25rem;text-transform:uppercase;letter-spacing:0.05em', text: 'Demo' }) : null
       ),
       el('span', { class: 'wed-card__date', text: formatDate(w.wedding_date) })
     );
