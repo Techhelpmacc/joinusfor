@@ -144,8 +144,12 @@ async function loadVenues() {
           el('h3', { style: 'margin:0;font-size:1.1rem', text: venue.name }),
           el('p', { class: 'panel__sub', style: 'margin:.5rem 0 0', text: `${staffCount} staff${pendingCount ? ` • ${pendingCount} pending invite${pendingCount > 1 ? 's' : ''}` : ''}` })
         ),
-        el('button', { class: 'btn btn--ghost btn--sm', type: 'button', text: 'Invite staff',
-                       onclick: () => showInviteDialog(venue) })
+        el('div', { style: 'display:flex;gap:.5rem' },
+          el('button', { class: 'btn btn--ghost btn--sm', type: 'button', text: 'Invite staff',
+                         onclick: () => showInviteDialog(venue) }),
+          el('button', { class: 'btn btn--danger btn--sm', type: 'button', text: 'Delete',
+                         onclick: () => deleteVenue(venue) })
+        )
       )
     );
 
@@ -253,6 +257,27 @@ async function showInviteDialog(venue) {
     }
 
     toast(`Invite email sent to ${email}`, 'success');
+    await loadVenues();
+  } catch (err) {
+    toast(err.message, 'error');
+  }
+}
+
+async function deleteVenue(venue) {
+  const confirmed = confirm(`Delete "${venue.name}" and all its data? This cannot be undone.`);
+  if (!confirmed) return;
+
+  try {
+    const { data, error } = await sb.rpc('delete_venue_completely', {
+      p_venue_id: venue.id
+    });
+
+    if (error || !data?.ok) {
+      toast(data?.message || error?.message || 'Failed to delete venue', 'error');
+      return;
+    }
+
+    toast(`Venue "${venue.name}" deleted successfully`, 'success');
     await loadVenues();
   } catch (err) {
     toast(err.message, 'error');
