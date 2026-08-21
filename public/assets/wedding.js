@@ -13,6 +13,7 @@ const PHOTOS_VIEW = (() => {
 
 let SLUG = '';
 let WEDDING = null;
+let VENUE = null;                // host venue, for details the couple never retyped
 let COMPLETE = false;            // the couple has marked the day as done
 let INVITE = null;         // { id, token, household_name, ... }
 let GUESTS = [];
@@ -46,6 +47,7 @@ async function start() {
     'We couldn’t find this wedding. It may not have been published yet.');
 
   WEDDING = data.wedding;
+  VENUE = data.venue || null;
   MEALS = WEDDING.meal_options || [];
   CHILD_MEALS = WEDDING.child_meal_options || [];
 
@@ -62,7 +64,23 @@ async function start() {
   } else if (!PHOTOS_VIEW) {
     renderStory();
     renderSchedule(data.schedule || []);
-    renderInfo(data.info || []);
+
+    // Build venue info blocks for phone and parking
+    const venueInfo = [];
+    if (data.venue?.phone) {
+      venueInfo.push({
+        title: 'Contact',
+        body: data.venue.phone
+      });
+    }
+    if (data.venue?.parking_info) {
+      venueInfo.push({
+        title: 'Parking',
+        body: data.venue.parking_info
+      });
+    }
+
+    renderInfo([...venueInfo, ...(data.info || [])]);
     renderRsvpIntro();
   }
 
@@ -183,12 +201,14 @@ function renderInfo(blocks) {
   const grid = $('#infoGrid');
   const all = [...blocks];
 
-  // The venue address is always worth a card, even if nobody filled one in.
-  if (WEDDING.location_address) {
+  // The venue address is always worth a card. Couples rarely retype what their
+  // venue already knows, so fall back to the venue's own details.
+  const address = WEDDING.location_address || VENUE?.address;
+  if (address) {
     all.unshift({
-      title: WEDDING.location_name || 'The venue',
-      body: WEDDING.location_address,
-      link_url: WEDDING.location_maps_url,
+      title: WEDDING.location_name || VENUE?.name || 'The venue',
+      body: address,
+      link_url: WEDDING.location_maps_url || VENUE?.location_maps_url,
       link_label: 'Open in maps'
     });
   }

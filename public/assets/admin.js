@@ -7,6 +7,7 @@ import { sb, cfg, $, $$, el, formatDate, daysUntil, downscaleImage, randomName,
 
 let USER = null, ROLES = [], WEDDINGS = [], W = null;
 let INVITES = [], GUESTS = [], PHOTOS = [], VENUES = [];
+let WVENUE = null;               // venue that hosts W, for inherited location details
 let EDITING = null;              // id of the guest row currently being edited
 
 const isStaff = () => ROLES.some(r => r.role === 'venue' || r.role === 'owner');
@@ -328,7 +329,7 @@ async function selectWedding(id) {
     $$('.tab').forEach(tab => { tab.hidden = false; });
   }
 
-  await Promise.all([loadGuests(), loadPhotos(), loadContent()]);
+  await Promise.all([loadGuests(), loadPhotos(), loadContent(), loadWeddingVenue()]);
   fillSettings();
   renderOverview();
   await loadAccess();
@@ -1144,6 +1145,21 @@ function renderInfo(blocks) {
 }
 
 // -------------------------------------------------------------- settings ---
+
+/**
+ * The venue types its address, phone and parking in once, on its own settings
+ * page. Every wedding it hosts then inherits those details rather than asking
+ * each couple to retype what the venue already knows.
+ */
+async function loadWeddingVenue() {
+  WVENUE = null;
+  if (!W?.venue_id) return;
+  const cached = VENUES.find(v => v.id === W.venue_id);
+  if (cached) { WVENUE = cached; return; }
+  const { data } = await sb.from('venues').select('*').eq('id', W.venue_id).single();
+  WVENUE = data || null;
+}
+
 function fillSettings() {
   $('#pa').value = W.partner_a || '';
   $('#pb').value = W.partner_b || '';
@@ -1152,10 +1168,13 @@ function fillSettings() {
   $('#wintro').value = W.intro || '';
   $('#whero').value = W.hero_image_url || '';
   $('#wstory').value = W.story || '';
-  $('#wloc').value = W.location_name || '';
+  // Fall back to the venue's own details so a wedding that has never had these
+  // filled in still shows where it is happening. Anything typed here overrides
+  // the venue — useful when a ceremony is held somewhere else.
+  $('#wloc').value = W.location_name || WVENUE?.name || '';
   $('#wtime').value = W.ceremony_time || '';
-  $('#waddr').value = W.location_address || '';
-  $('#wmaps').value = W.location_maps_url || '';
+  $('#waddr').value = W.location_address || WVENUE?.address || '';
+  $('#wmaps').value = W.location_maps_url || WVENUE?.location_maps_url || '';
   $('#wdeadline').value = W.rsvp_deadline || '';
   $('#wmeals').value = (W.meal_options || []).join(', ');
   $('#wchildmeals').value = (W.child_meal_options || []).join(', ');

@@ -459,7 +459,9 @@ language sql stable security definer set search_path = public as $$
   select jsonb_build_object(
     'wedding', to_jsonb(w) - 'venue_id' - 'rsvp_name_lookup',
     'venue',   jsonb_build_object('name', v.name, 'logo_url', v.logo_url,
-                                  'brand_primary', v.brand_primary, 'website', v.website),
+                                  'brand_primary', v.brand_primary, 'website', v.website,
+                                  'phone', v.phone, 'address', v.address,
+                                  'parking_info', v.parking_info, 'location_maps_url', v.location_maps_url),
     'schedule', coalesce((select jsonb_agg(to_jsonb(s) order by s.sort_order)
                           from public.schedule_items s where s.wedding_id = w.id), '[]'::jsonb),
     'info',     coalesce((select jsonb_agg(to_jsonb(i) order by i.sort_order)

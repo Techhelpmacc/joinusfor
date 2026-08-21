@@ -7,7 +7,7 @@ language plpgsql security definer set search_path = public as $$
 declare
   v_wedding_id uuid;
 begin
-  -- Create demo wedding
+  -- Create demo wedding with unique slug per venue
   insert into public.weddings (
     venue_id, partner_a, partner_b, wedding_date, slug, status,
     rsvp_open, rsvp_deadline
@@ -15,7 +15,7 @@ begin
     p_venue_id,
     'John', 'Amy',
     '2026-10-09'::date,
-    'demo-wedding',
+    'demo-wedding-' || p_venue_id::text,
     'draft',
     false,
     '2026-10-02'::date
