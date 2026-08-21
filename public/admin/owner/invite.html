@@ -180,12 +180,15 @@ async function setupAccount() {
     }
 
     // Send welcome email (best-effort - don't fail if it doesn't send)
-    sb.rpc('send_welcome_email', {
-      p_email: INVITE_DATA.email,
-      p_venue_name: INVITE_DATA.venue_name
-    }).catch(() => {
+    try {
+      await sb.rpc('send_welcome_email', {
+        p_email: INVITE_DATA.email,
+        p_venue_name: INVITE_DATA.venue_name
+      });
+    } catch (emailErr) {
       // Email send failed, but account is already created - continue anyway
-    });
+      console.log('Welcome email failed to send:', emailErr);
+    }
 
     toast('Account created! Redirecting…', 'success');
     setTimeout(() => {
