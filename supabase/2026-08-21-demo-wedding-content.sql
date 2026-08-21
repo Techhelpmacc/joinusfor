@@ -22,8 +22,10 @@ declare
   v_invite_id uuid;
   r record;
 begin
-  -- weddings.slug is globally unique, so conflict on that rather than on the
-  -- venue: two venues must never collide on 'demo-wedding'.
+  -- slug is unique per venue, not globally (install.sql says otherwise; the
+  -- database is what counts). The venue id still goes in the slug because the
+  -- guest site looks a wedding up by slug alone — two venues both holding
+  -- 'demo-wedding' would make /w/demo-wedding ambiguous.
   insert into public.weddings (
     venue_id, slug, partner_a, partner_b, wedding_date, ceremony_time,
     hero_image_url, intro, story, theme, status,
@@ -41,13 +43,14 @@ begin
     array['Chicken goujons', 'Pasta'],
     true, false
   )
-  on conflict (slug) do nothing
+  on conflict (venue_id, slug) do nothing
   returning id into v_wedding_id;
 
   -- Already there from an earlier run: leave its contents alone, since the
   -- venue may well have been editing it.
   if v_wedding_id is null then
-    select id into v_wedding_id from public.weddings where slug = v_slug;
+    select id into v_wedding_id from public.weddings
+     where venue_id = p_venue_id and slug = v_slug;
     return v_wedding_id;
   end if;
 
