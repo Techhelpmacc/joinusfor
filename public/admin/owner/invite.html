@@ -124,13 +124,16 @@ async function setupAccount() {
 
   try {
     // Create user with email and password
-    const { data: authData, error: authError } = await sb.auth.signUp({
+    let authData, authError;
+    const signUpResult = await sb.auth.signUp({
       email: INVITE_DATA.email,
       password: password,
       options: {
         emailRedirectTo: window.location.origin
       }
     });
+    authData = signUpResult.data;
+    authError = signUpResult.error;
 
     if (authError) {
       // User might already exist, try to sign in instead
