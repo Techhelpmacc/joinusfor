@@ -169,7 +169,10 @@ async function renderHome() {
       class: 'wed-card', type: 'button',
       onclick: () => openWedding(w.id)
     },
-      el('span', { class: 'wed-card__names', text: `${w.partner_a} & ${w.partner_b}` }),
+      el('div', {},
+        el('span', { class: 'wed-card__names', text: `${w.partner_a} & ${w.partner_b}` }),
+        w.slug === 'demo-wedding' ? el('span', { style: 'display:block;color:#dc3545;font-size:0.85rem;font-weight:600;margin-top:0.25rem;text-transform:uppercase;letter-spacing:0.05em', text: 'Demo' }) : null
+      ),
       el('span', { class: 'wed-card__date', text: formatDate(w.wedding_date) })
     );
 

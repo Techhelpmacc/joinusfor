@@ -16,13 +16,13 @@ begin
     'John', 'Amy',
     '2026-10-09'::date,
     'demo-wedding',
-    'live',
-    true,
+    'draft',
+    false,
     '2026-10-02'::date
   )
   on conflict (venue_id, slug) do update set
-    status = 'live',
-    rsvp_open = true
+    status = 'draft',
+    rsvp_open = false
   returning id into v_wedding_id;
 
   -- Create couple as guests
