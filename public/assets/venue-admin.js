@@ -45,10 +45,20 @@ function setupLoginForm() {
     e.preventDefault();
     usePassword = !usePassword;
     passwordGroup.style.display = usePassword ? 'block' : 'none';
+    forgot.style.display = usePassword ? 'block' : 'none';
     btn.textContent = usePassword ? 'Sign in' : 'Send me a login link';
     toggleBtn.querySelector('button').textContent = usePassword ? 'Use magic link instead' : 'Use password instead';
   };
   form.appendChild(toggleBtn);
+
+  // Only worth offering alongside the password field — there is nothing to
+  // reset if they are signing in by magic link.
+  const forgot = document.createElement('p');
+  forgot.className = 'hint';
+  forgot.style.marginTop = '.5rem';
+  forgot.style.display = 'none';
+  forgot.innerHTML = `<a href="/admin/reset-password.html">Forgotten your password?</a>`;
+  form.appendChild(forgot);
 
   form.addEventListener('submit', async e => {
     e.preventDefault();

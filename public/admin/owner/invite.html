@@ -135,16 +135,31 @@ async function setupAccount() {
     authData = signUpResult.data;
     authError = signUpResult.error;
 
-    if (authError) {
+    // When email confirmations are on, Supabase will not admit that an address
+    // is already taken — it returns a success with an empty identities array
+    // instead, so nobody can use this form to probe which emails are
+    // registered. Treat that as the "already registered" case.
+    const obfuscatedExisting = !authError
+      && authData?.user
+      && Array.isArray(authData.user.identities)
+      && authData.user.identities.length === 0;
+
+    if (authError || obfuscatedExisting) {
       // User might already exist, try to sign in instead
-      if (authError.message.includes('already registered')) {
+      if (obfuscatedExisting || authError.message.includes('already registered')) {
         const { data: signInData, error: signInError } = await sb.auth.signInWithPassword({
           email: INVITE_DATA.email,
           password: password
         });
 
         if (signInError) {
-          msg.textContent = 'Incorrect password. If you already have an account, please sign in on the login page.';
+          // They already have an account from some earlier sign-up, so the
+          // password they just chose here is not the one on it. They can't be
+          // expected to remember it either — send them to reset it, carrying
+          // the invite so the venue still gets linked at the end.
+          msg.innerHTML = 'You already have an account with this email. '
+            + `<a href="/admin/reset-password.html?invite=${encodeURIComponent(TOKEN)}">`
+            + 'Set a new password</a> to finish joining.';
           msg.style.display = 'block';
           btn.disabled = false;
           btn.textContent = 'Set up account';
