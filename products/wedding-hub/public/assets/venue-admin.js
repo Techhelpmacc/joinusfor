@@ -187,8 +187,19 @@ async function saveVenue() {
 }
 
 async function loadMenus(venueId) {
-  const { data: menus } = await sb.from('venue_menus').select('*')
+  const { data: menus, error } = await sb.from('venue_menus').select('*')
     .eq('venue_id', venueId).order('created_at');
+
+  // A failed read used to render as "No menus created yet", which reads as a
+  // fact about the venue rather than a fault. Say which of the two it is.
+  if (error) {
+    const host = $('#menusList');
+    host.innerHTML = '';
+    host.append(el('p', { class: 'empty',
+      text: 'Could not load your menus just now. Refresh the page to try again.' }));
+    toast('Could not load menus: ' + error.message, 'error');
+    return;
+  }
 
   renderMenus(menus || []);
 }
