@@ -1180,6 +1180,7 @@ function fillSettings() {
   $('#wdeadline').value = W.rsvp_deadline || '';
   $('#wmeals').value = (W.meal_options || []).join(', ');
   $('#wchildmeals').value = (W.child_meal_options || []).join(', ');
+  fillMenuPicker();
   $('#wrsvpopen').checked = !!W.rsvp_open;
   $('#wnamelookup').checked = !!W.rsvp_name_lookup;
   $('#wcomplete').checked = !!W.wedding_complete;
@@ -1193,6 +1194,49 @@ function fillSettings() {
   // couple's — "we unpublished our own site by accident" is not a support
   // call worth having. Also enforced by a trigger in the database.
   $('#publishPanel').classList.toggle('hide', !isStaff());
+}
+
+let MENU_PICKER_READY = false;
+
+// The venue writes its set menus up whenever it gets round to it — often after
+// the wedding is already in the system. Offering the menu only on the new-wedding
+// form left those weddings with no way to ever pick one up.
+async function fillMenuPicker() {
+  MENU_PICKER_READY = false;
+  const sel = $('#wmenu');
+  sel.innerHTML = '';
+  sel.append(el('option', { value: '', text: 'Not using a set menu' }));
+
+  const { data: menus, error } = await sb.from('venue_menus')
+    .select('id, name').eq('venue_id', W.venue_id).order('created_at');
+
+  if (error) {
+    toast('Could not load the venue menus: ' + error.message, 'error');
+    return;
+  }
+
+  (menus || []).forEach(m => sel.append(el('option', { value: m.id, text: m.name })));
+  sel.value = W.venue_menu_id || '';
+
+  // Only let Save write this field if the picker is actually showing the truth.
+  // A failed load, or a menu this account can't read, would otherwise look like
+  // "no set menu" and quietly detach the one the wedding already has.
+  MENU_PICKER_READY = sel.value === (W.venue_menu_id || '');
+
+  // Nothing to choose from and nothing chosen: don't ask the question at all.
+  $('#wmenuField').classList.toggle('hide', !(menus || []).length && !W.venue_menu_id);
+  reflectMenuChoice();
+}
+
+// A set menu overrides whatever is typed below — that is what the database does,
+// so say so rather than letting someone type options that quietly do nothing.
+function reflectMenuChoice() {
+  const usingMenu = !!$('#wmenu').value;
+  $('#wmeals').disabled = usingMenu;
+  $('#wchildmeals').disabled = usingMenu;
+  $('#wmealsHint').textContent = usingMenu
+    ? 'The set menu above is what guests are offered. Choose "Not using a set menu" to type your own.'
+    : 'Comma separated. Leave blank to skip the question.';
 }
 
 async function saveSettings(e) {
@@ -1220,6 +1264,8 @@ async function saveSettings(e) {
     wedding_complete: $('#wcomplete').checked,
     closing_message: $('#wclosing').value.trim() || null
   };
+
+  if (MENU_PICKER_READY) patch.venue_menu_id = $('#wmenu').value || null;
 
   // Only venue staff and above may touch publishing fields.
   if (isStaff()) {
@@ -1476,6 +1522,7 @@ function wireEverything() {
 
   // settings
   $('#settingsForm').addEventListener('submit', saveSettings);
+  $('#wmenu').addEventListener('change', reflectMenuChoice);
 
   $('#deleteWedding').onclick = async () => {
     const name = `${W.partner_a} & ${W.partner_b}`;

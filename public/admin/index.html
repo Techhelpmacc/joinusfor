@@ -454,11 +454,17 @@
 
       <div class="panel">
         <h2 class="panel__title" style="margin-bottom:1rem">RSVPs</h2>
+        <div class="fld" id="wmenuField">
+          <label class="lbl" for="wmenu">Set menu</label>
+          <select class="sel" id="wmenu">
+            <option value="">Not using a set menu</option>
+          </select>
+          <p class="hint">One of your venue's set menus. Pick one and that is what guests are offered.</p></div>
         <div class="grid2">
           <div class="fld"><label class="lbl" for="wdeadline">Reply by</label><input class="in" type="date" id="wdeadline"></div>
           <div class="fld"><label class="lbl" for="wmeals">Menu choices</label>
             <input class="in" id="wmeals" placeholder="Beef, Salmon, Vegetarian">
-            <p class="hint">Comma separated. Leave blank to skip the question.</p></div>
+            <p class="hint" id="wmealsHint">Comma separated. Leave blank to skip the question.</p></div>
           <div class="fld"><label class="lbl" for="wchildmeals">Children's menu</label>
             <input class="in" id="wchildmeals" placeholder="Chicken goujons, Pasta, Sausage &amp; mash">
             <p class="hint">Offered to anyone marked as a child. Leave blank and they get the adult menu.</p></div>
@@ -539,6 +545,6 @@
   </div>
 </dialog>
 
-<script type="module" src="/assets/admin.js?v=103"></script>
+<script type="module" src="/assets/admin.js?v=104"></script>
 </body>
 </html>
