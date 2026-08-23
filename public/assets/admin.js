@@ -5,6 +5,9 @@
 import { sb, cfg, $, $$, el, formatDate, daysUntil, downscaleImage, randomName,
          publicPhotoUrl, sendInviteEmail, toast } from './app.js?v=20';
 
+const BUILD = '2026-08-23-a';
+window.__ADMIN_BUILD = BUILD;
+
 let USER = null, ROLES = [], WEDDINGS = [], W = null;
 let INVITES = [], GUESTS = [], PHOTOS = [], VENUES = [];
 let WVENUE = null;               // venue that hosts W, for inherited location details
@@ -1223,8 +1226,13 @@ async function fillMenuPicker() {
   // "no set menu" and quietly detach the one the wedding already has.
   MENU_PICKER_READY = sel.value === (W.venue_menu_id || '');
 
-  // Nothing to choose from and nothing chosen: don't ask the question at all.
-  $('#wmenuField').classList.toggle('hide', !(menus || []).length && !W.venue_menu_id);
+  // Say "there aren't any yet" out loud. Hiding the control when the list came
+  // back empty made a missing menu and a missing feature look identical, which
+  // is no help to anyone wondering where their menu went.
+  sel.disabled = !(menus || []).length;
+  $('#wmenuHint').textContent = (menus || []).length
+    ? "One of your venue's set menus. Pick one and that is what guests are offered."
+    : 'No set menus found for this venue yet — create them under Venue settings, then come back here.';
   reflectMenuChoice();
 }
 
